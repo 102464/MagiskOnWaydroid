@@ -295,8 +295,10 @@ jobs:
       - name: Replace system and vendor
         run: |
           rm -rf ${{ matrix.arch }}/{system,vendor}.img
-          wget -q https://sourceforge.net/projects/blissos-dev/files/waydroid/lineage/lineage-18.1/Lineage-OS-18.1-waydroid_x86_64-202111291420-foss-sd-hd-ex_ax86-vaapi_gles-aep.zip/download -O los.zip
-          7z x los.zip -o${{ matrix.arch }}/
+          wget -q https://sourceforge.net/projects/waydroid/files/images/system/lineage/waydroid_x86_64/lineage-18.1-20221109-GAPPS-waydroid_x86_64-system.zip/download -O system.zip
+          wget -q https://sourceforge.net/projects/waydroid/files/images/vendor/waydroid_x86_64/lineage-18.1-20221109-MAINLINE-waydroid_x86_64-vendor.zip/download -O vender.zip
+          7z x system.zip -o${{ matrix.arch }}/
+          7z x vendor.zip -o${{ matrix.arch }}/
       - name: Extract GApps and expand images
         if: ${{ matrix.gapps_variant != 'none' && matrix.gapps_variant != '' }}
         run: |
@@ -304,10 +306,6 @@ jobs:
           unzip -p gapps.zip {Core,GApps}/'*.lz' | tar --lzip -C gapps -xvf - -i --strip-components=2 --exclude='setupwizardtablet-x86_64' --exclude='packageinstallergoogle-all' --exclude='speech-common' --exclude='markup-lib-arm' --exclude='markup-lib-arm64' --exclude='markup-all' --exclude='setupwizarddefault-x86_64' --exclude='pixellauncher-all' --exclude='pixellauncher-common'
           e2fsck -yf ${{ matrix.arch }}/system.img
           resize2fs ${{ matrix.arch }}/system.img $(( $(du -sB512 gapps | cut -f1) + $(du -sB512 ${{ matrix.arch }}/system.img | cut -f1) ))s
-          e2fsck -yf ${{ matrix.arch }}/product.img
-          resize2fs ${{ matrix.arch }}/product.img 1024M
-          e2fsck -yf ${{ matrix.arch }}/system_ext.img
-          resize2fs -M ${{ matrix.arch }}/system_ext.img
       - name: Expand vendor
         run: |
           e2fsck -yf ${{ matrix.arch }}/vendor.img
@@ -318,14 +316,6 @@ jobs:
           sudo mkdir userdata
           sudo mount -o loop ${{ matrix.arch }}/system.img system
           sudo mount -o loop ${{ matrix.arch }}/vendor.img system/vendor
-          sudo mv system/product system/product_ln
-          sudo mkdir system/product
-          sudo mount --bind $(pwd)/system/system/product $(pwd)/system/product
-          ls system/product
-          sudo mv system/system_ext system/system_ext_ln
-          sudo mkdir system/system_ext
-          sudo mount --bind $(pwd)/system/system/system_ext $(pwd)/system/system_ext
-          ls system/system_ext
           qemu-img convert -O raw ${{ matrix.arch }}/userdata.vhdx userdata.img
           sudo mount -o loop userdata.img userdata
       - name: Integrate Magisk
@@ -584,12 +574,6 @@ jobs:
       - name: Umount images
         run: |
           sudo umount system/vendor
-          sudo umount -l system/product
-          sudo rm -rf system/product
-          sudo mv system/product_ln system/product
-          sudo umount -l system/system_ext
-          sudo rm -rf system/system_ext
-          sudo mv system/system_ext_ln system/system_ext
           sudo umount system
           sudo umount userdata
           qemu-img convert -o subformat=dynamic -f raw -O vhdx userdata.img ${{ matrix.arch }}/userdata.vhdx
@@ -599,10 +583,6 @@ jobs:
           resize2fs -M ${{ matrix.arch }}/system.img
           e2fsck -yf ${{ matrix.arch }}/vendor.img
           resize2fs -M ${{ matrix.arch }}/vendor.img
-          e2fsck -yf ${{ matrix.arch }}/product.img
-          resize2fs -M ${{ matrix.arch }}/product.img
-          e2fsck -yf ${{ matrix.arch }}/system_ext.img
-          resize2fs -M ${{ matrix.arch }}/system_ext.img
       - name: Remove signature and add scripts
         run: |
           rm -rf ${{ matrix.arch }}/product.img
