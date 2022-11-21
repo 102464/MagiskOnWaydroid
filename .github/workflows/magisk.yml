@@ -86,7 +86,7 @@ jobs:
             let magisk_apk = "${{ github.event.inputs.magisk_apk }}"
             switch ( magisk_apk ) {
               default:
-                matrix.magisk_apk = ["stable"];
+                matrix.magisk_apk = ["24.3"];
                 break;
             }
             let gapps_variant = "${{ github.event.inputs.gapps_variant }}"
@@ -212,13 +212,15 @@ jobs:
           wget -q https://sourceforge.net/projects/waydroid/files/images/vendor/waydroid_x86_64/lineage-18.1-20221109-MAINLINE-waydroid_x86_64-vendor.zip/download -O vendor.zip
           7z x system.zip -o${{ matrix.arch }}/
           7z x vendor.zip -o${{ matrix.arch }}/
-      - name: Extract GApps and expand images
+      - name: Extract GApps
         if: ${{ matrix.gapps_variant != 'none' && matrix.gapps_variant != '' }}
         run: |
           mkdir gapps
           unzip -p gapps.zip {Core,GApps}/'*.lz' | tar --lzip -C gapps -xvf - -i --strip-components=2 --exclude='setupwizardtablet-x86_64' --exclude='packageinstallergoogle-all' --exclude='speech-common' --exclude='markup-lib-arm' --exclude='markup-lib-arm64' --exclude='markup-all' --exclude='setupwizarddefault-x86_64' --exclude='pixellauncher-all' --exclude='pixellauncher-common'
+      - name: Expand system
+        run: |
           e2fsck -yf ${{ matrix.arch }}/system.img
-          resize2fs ${{ matrix.arch }}/system.img $(( $(du -sB512 gapps | cut -f1) + $(du -sB512 ${{ matrix.arch }}/system.img | cut -f1) ))s
+          resize2fs ${{ matrix.arch }}/system.img $(( 409600 + $(du -sB512 ${{ matrix.arch }}/system.img | cut -f1) ))s
       - name: Expand vendor
         run: |
           e2fsck -yf ${{ matrix.arch }}/vendor.img
