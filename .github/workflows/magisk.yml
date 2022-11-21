@@ -229,8 +229,6 @@ jobs:
           sudo mkdir userdata
           sudo mount -o loop ${{ matrix.arch }}/system.img system
           sudo mount -o loop ${{ matrix.arch }}/vendor.img system/vendor
-          qemu-img convert -O raw ${{ matrix.arch }}/userdata.vhdx userdata.img
-          sudo mount -o loop userdata.img userdata
       - name: Integrate Magisk
         if: ${{ github.event.inputs.root_sol == 'magisk' || github.event.inputs.root_sol == '' }}
         run: |
@@ -239,11 +237,6 @@ jobs:
           sudo chown root:root system/sbin
           sudo chmod 0700 system/sbin
           sudo cp magisk/* system/sbin/
-          sudo mkdir -p userdata/adb/magisk
-          sudo chmod -R 700 userdata/adb
-          sudo cp magisk/* userdata/adb/magisk/
-          sudo find userdata/adb/magisk -type f -exec chmod 0755 {} \;
-          sudo cp magisk.zip userdata/adb/magisk/magisk.apk
           sudo tee -a system/sbin/loadpolicy.sh <<EOF
           #!/system/bin/sh
           restorecon -R /data/adb/magisk
@@ -496,11 +489,11 @@ jobs:
             name1="-${root}"
           fi
           if [[ "$variant" = "none" || "$variant" = "" ]]; then
-            name2="-NoGApps"
+            name2="-VANILLA"
           else
             name2="-${variant}"
           fi
-          echo "artifact_name=WD${name1}${name2}_${{ matrix.arch }}" >> $GITHUB_ENV
+          echo "artifact_name=Waydroid${name1}${name2}_${{ matrix.arch }}" >> $GITHUB_ENV
       - name: Upload Waydroid
         uses: actions/upload-artifact@v2
         with:
