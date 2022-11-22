@@ -242,14 +242,13 @@ jobs:
           EOF
           sudo find system/sbin -type f -exec chmod 0755 {} \;
           sudo find system/sbin -type f -exec chown root:root {} \;
-          sudo find system/sbin -type f -exec chcon --reference system/product {} \;
           # new since v24.3
           sudo patchelf --replace-needed libc.so "${HOME}/libc.so" ./magiskpolicy || true
           sudo patchelf --replace-needed libm.so "${HOME}/libm.so" ./magiskpolicy || true
           sudo patchelf --replace-needed libdl.so "${HOME}/libdl.so" ./magiskpolicy || true
           sudo patchelf --set-interpreter "${HOME}/linker64" ./magiskpolicy || true
           # new since v24.3
-          chmod +x ./magiskpolicy
+          sudo chmod +x ./magiskpolicy
           echo '/dev/magisk(/.*)?    u:object_r:magisk_file:s0' | sudo tee -a system/vendor/etc/selinux/vendor_file_contexts
           echo '/data/adb/magisk(/.*)?   u:object_r:magisk_file:s0' | sudo tee -a system/vendor/etc/selinux/vendor_file_contexts
           echo '/system/bin/strace u:object_r:zygote_socket:s0' | sudo tee -a system/vendor/etc/selinux/vendor_file_contexts
