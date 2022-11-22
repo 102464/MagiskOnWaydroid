@@ -21,16 +21,16 @@ on:
         default: "11"
         type: choice
         options:
-        - 11
+        - "11"
       magisk_apk:
         description: "Magisk version"
         required: true
-        default: "24.3"
+        default: "canary"
         type: choice
         options:
-        - 24.1
-        - 24.2
-        - 24.3
+        - "24.1"
+        - "24.2"
+        - "24.3"
         - stable
         - beta
         - canary
@@ -85,21 +85,12 @@ jobs:
             }
             let magisk_apk = "${{ github.event.inputs.magisk_apk }}"
             switch ( magisk_apk ) {
-              default:
-                matrix.magisk_apk = ["24.3"];
-                break;
             }
             let gapps_variant = "${{ github.event.inputs.gapps_variant }}"
             switch ( gapps_variant ) {
-              default:
-                matrix.gapps_variant = ["none"];
-                break;
             }
             let root_sol = "${{ github.event.inputs.root_sol }}"
             switch ( root_sol ) {
-              default:
-                matrix.root_sol = ["magisk"];
-                break;
             }
             core.setOutput("matrix",JSON.stringify(matrix));
 
